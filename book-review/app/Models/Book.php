@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class Book extends Model
 {
@@ -14,12 +15,22 @@ class Book extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function scopeTitle(Builder $query, string $title): Builder {
+    public function scopeTitle(Builder $query, string $title): Builder|QueryBuilder {
         return $query->where("title","like","%" . $title . "%");
     }
 
-    public function scopePopular(Builder $query): Builder {
-        return $query->withCount('reviews')->orderBy('reviews_count','desc');
+    public function scopePopular(Builder $query, $from=null, $to=null): Builder|QueryBuilder {
+        return $query->withCount([
+            'reviews' => function (Builder $q, $from, $to) use ($from, $to) {
+                if ($from && !$to) {
+                    $q->where('created_at','>=', $from);
+                } elseif (!$from && $to) {
+                    $q->where('created_at','<=', $to);
+                } elseif ($from && $to) {
+                    $q->whereBetween('created_at', [$from, $to]);
+                }
+            }
+        ])->orderBy('reviews_count','desc');
     }
 
     public function scopeHighestRated(Builder $query): Builder { 

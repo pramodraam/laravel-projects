@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Resources\EventResource;
+use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
@@ -14,6 +14,7 @@ class EventController extends Controller
      */
     public function index()
     {
+        return EventResource::collection(Event::with('user')->get());
         return EventResource::collection(Event::with('user')->get());
     }
 
@@ -65,9 +66,9 @@ class EventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Event $event)
     {
-      $event = Event::findOrFail($id);
+      $event = Event::findOrFail($event->id);
       $event->delete();
     }
 }

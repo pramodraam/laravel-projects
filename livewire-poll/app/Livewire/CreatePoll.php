@@ -28,7 +28,7 @@ class CreatePoll extends Component
 
     public function createPoll()
     {
-        $poll = Poll::create([
+        Poll::create([
             'title' => $this->title
         ])->options()->createMany(
                 collect($this->options)
